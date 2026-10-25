@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Daily Grit & Bible Tracker</title>
+  
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Daily%20Grit%20%26%20Bible%22%2C%22short_name%22%3A%22DailyGrit%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D" />
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --gold: #eab308;
+      --silver: #94a3b8;
+      --pf: #9333ea;
+      --bible: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; padding-bottom: 40px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .header h1 { font-size: 1.3rem; font-weight: 800; color: #fff; }
+    .streak-badge { background: #3b82f620; border: 1px solid #3b82f6; padding: 4px 10px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; color: #60a5fa; }
+    
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+    .card-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* Calisthenics */
+    .task-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #33415550; }
+    .task-row:last-child { border-bottom: none; }
+    .task-info { display: flex; flex-direction: column; }
+    .task-name { font-weight: 600; font-size: 1.05rem; }
+    .task-sub { font-size: 0.75rem; color: var(--muted); }
+    .btn-toggle { background: #334155; border: none; color: #fff; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-toggle.done { background: var(--success); }
+
+    /* Bible Card */
+    .bible-box { background: #f59e0b15; border: 1px solid #f59e0b40; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .bible-day { font-size: 0.75rem; text-transform: uppercase; color: var(--bible); font-weight: 700; margin-bottom: 4px; }
+    .bible-passage { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .bible-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-gateway { display: inline-flex; align-items: center; justify-content: center; flex: 1; background: var(--bible); color: #000; text-decoration: none; padding: 9px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; text-align: center; }
+    .btn-bible-done { background: #334155; border: none; color: #fff; padding: 9px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-bible-done.done { background: var(--success); }
+
+    /* Planet Fitness */
+    .star-progress { display: flex; justify-content: space-around; margin: 12px 0; }
+    .star-indicator { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; font-weight: 700; }
+    .star-icon { font-size: 1.8rem; opacity: 0.3; transition: 0.3s; }
+    .star-indicator.achieved .star-icon { opacity: 1; filter: drop-shadow(0 0 6px rgba(234, 179, 8, 0.6)); }
+    .star-indicator.silver.achieved { color: #cbd5e1; }
+    .star-indicator.gold.achieved { color: var(--gold); }
+    .btn-pf { width: 100%; background: var(--pf); border: none; color: #fff; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; margin-top: 8px; }
+    .btn-pf:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Footer info */
+    .footer-note { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Daily Grit</h1>
+    <div class="streak-badge" id="streakBadge">🔥 0 Day Streak</div>
+  </div>
+
+  <!-- Calisthenics Section -->
+  <div class="card">
+    <div class="card-title">Daily Calisthenics</div>
+    <div class="task-row">
+      <div class="task-info">
+        <span class="task-name">20 Pushups</span>
+        <span class="task-sub">Morning Routine</span>
+      </div>
+      <button class="btn-toggle" id="btnPushups" onclick="toggleExercise('pushups')">Mark Done</button>
+    </div>
+    <div class="task-row">
+      <div class="task-info">
+        <span class="task-name">20 Situps</span>
+        <span class="task-sub">Morning Routine</span>
+      </div>
+      <button class="btn-toggle" id="btnSitups" onclick="toggleExercise('situps')">Mark Done</button>
+    </div>
+  </div>
+
+  <!-- 2-Year Bible Reading Section -->
+  <div class="card">
+    <div class="card-title">
+      <span>2-Year Bible Plan</span>
+      <span style="font-size:0.75rem; font-weight:normal;" id="bibleProgress">Day 1 of 730</span>
+    </div>
+    <div class="bible-box">
+      <div class="bible-day" id="bibleDayLabel">Today's Scripture</div>
+      <div class="bible-passage" id="biblePassageText">Genesis 1-2</div>
+      <div class="bible-actions">
+        <a id="bibleGatewayLink" class="btn-gateway" href="#" target="_blank" rel="noopener">Read on BibleGateway ↗</a>
+        <button class="btn-bible-done" id="btnBibleDone" onclick="toggleBibleDay()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Planet Fitness Tracker -->
+  <div class="card">
+    <div class="card-title">
+      <span>Planet Fitness Check-ins</span>
+      <span style="font-size:0.75rem;" id="weekSummary">Week: 0/7</span>
+    </div>
+    <div class="star-progress">
+      <div class="star-indicator silver" id="starSilver">
+        <div class="star-icon">⭐</div>
+        <span>5 Days (Silver)</span>
+      </div>
+      <div class="star-indicator gold" id="starGold">
+        <div class="star-icon">🌟</div>
+        <span>7 Days (Gold)</span>
+      </div>
+    </div>
+    <button class="btn-pf" id="btnPF" onclick="checkInGym()">Check In at Gym</button>
+  </div>
+
+  <div class="footer-note">Week starts Sunday • Data stored locally on this phone</div>
+
+  <script>
+    // 730-day (2-Year) Bible Plan Table generator (Genesis -> Revelation)
+    const BIBLE_BOOKS = [
+      { name: "Genesis", ch: 50 }, { name: "Exodus", ch: 40 }, { name: "Leviticus", ch: 27 },
+      { name: "Numbers", ch: 36 }, { name: "Deuteronomy", ch: 34 }, { name: "Joshua", ch: 24 },
+      { name: "Judges", ch: 21 }, { name: "Ruth", ch: 4 }, { name: "1 Samuel", ch: 31 },
+      { name: "2 Samuel", ch: 24 }, { name: "1 Kings", ch: 22 }, { name: "2 Kings", ch: 25 },
+      { name: "1 Chronicles", ch: 29 }, { name: "2 Chronicles", ch: 36 }, { name: "Ezra", ch: 10 },
+      { name: "Nehemiah", ch: 13 }, { name: "Esther", ch: 10 }, { name: "Job", ch: 42 },
+      { name: "Psalms", ch: 150 }, { name: "Proverbs", ch: 31 }, { name: "Ecclesiastes", ch: 12 },
+      { name: "Song of Solomon", ch: 8 }, { name: "Isaiah", ch: 66 }, { name: "Jeremiah", ch: 52 },
+      { name: "Lamentations", ch: 5 }, { name: "Ezekiel", ch: 48 }, { name: "Daniel", ch: 12 },
+      { name: "Hosea", ch: 14 }, { name: "Joel", ch: 3 }, { name: "Amos", ch: 9 },
+      { name: "Obadiah", ch: 1 }, { name: "Jonah", ch: 4 }, { name: "Micah", ch: 7 },
+      { name: "Nahum", ch: 3 }, { name: "Habakkuk", ch: 3 }, { name: "Zephania", ch: 3 },
+      { name: "Haggai", ch: 2 }, { name: "Zechariah", ch: 14 }, { name: "Malachi", ch: 4 },
+      { name: "Matthew", ch: 28 }, { name: "Mark", ch: 16 }, { name: "Luke", ch: 24 },
+      { name: "John", ch: 21 }, { name: "Acts", ch: 28 }, { name: "Romans", ch: 16 },
+      { name: "1 Corinthians", ch: 16 }, { name: "2 Corinthians", ch: 13 }, { name: "Galatians", ch: 6 },
+      { name: "Ephesians", ch: 6 }, { name: "Philippians", ch: 4 }, { name: "Colossians", ch: 4 },
+      { name: "1 Thessalonians", ch: 5 }, { name: "2 Thessalonians", ch: 3 }, { name: "1 Timothy", ch: 6 },
+      { name: "2 Timothy", ch: 4 }, { name: "Titus", ch: 3 }, { name: "Philemon", ch: 1 },
+      { name: "Hebrews", ch: 13 }, { name: "James", ch: 5 }, { name: "1 Peter", ch: 5 },
+      { name: "2 Peter", ch: 3 }, { name: "1 John", ch: 5 }, { name: "2 John", ch: 1 },
+      { name: "3 John", ch: 1 }, { name: "Jude", ch: 1 }, { name: "Revelation", ch: 22 }
+    ];
+
+    // Build the 730 reading portions (~1.6 chapters/day)
+    let allChapters = [];
+    BIBLE_BOOKS.forEach(b => {
+      for (let c = 1; c <= b.ch; c++) allChapters.push({ book: b.name, ch: c });
+    });
+    
+    let PLAN = [];
+    let curIdx = 0;
+    for (let day = 1; day <= 730; day++) {
+      let portionSize = (day % 3 === 0) ? 1 : 2; // alternates 1 or 2 chapters
+      let slice = allChapters.slice(curIdx, curIdx + portionSize);
+      curIdx += portionSize;
+      if (slice.length === 0) break;
+      let label = (slice.length === 1 || slice[0].book !== slice[slice.length - 1].book)
+        ? slice.map(s => `${s.book} ${s.ch}`).join(" & ")
+        : `${slice[0].book} ${slice[0].ch}-${slice[slice.length - 1].ch}`;
+      PLAN.push({ day, label, query: label.replace("&", ";") });
+    }
+
+    // App State Management
+    function getTodayKey() { return new Date().toISOString().split('T')[0]; }
+
+    function getSundayKey() {
+      let d = new Date();
+      d.setDate(d.getDate() - d.getDay());
+      return d.toISOString().split('T')[0];
+    }
+
+    let state = JSON.parse(localStorage.getItem('daily_grit_state')) || {
+      pushups: {},
+      situps: {},
+      streak: 0,
+      lastStreakDate: null,
+      gymCheckins: {}, // date: true
+      bibleDay: 1,
+      bibleCompletedDays: {}
+    };
+
+    function saveState() {
+      localStorage.setItem('daily_grit_state', JSON.stringify(state));
+      render();
+    }
+
+    function toggleExercise(type) {
+      let today = getTodayKey();
+      state[type][today] = !state[type][today];
+      
+      // Update streak if both completed
+      if (state.pushups[today] && state.situps[today]) {
+        if (state.lastStreakDate !== today) {
+          state.streak += 1;
+          state.lastStreakDate = today;
+        }
+      }
+      saveState();
+    }
+
+    function toggleBibleDay() {
+      let cur = state.bibleDay;
+      if (!state.bibleCompletedDays[cur]) {
+        state.bibleCompletedDays[cur] = getTodayKey();
+        if (state.bibleDay < 730) state.bibleDay += 1;
+      } else {
+        delete state.bibleCompletedDays[cur];
+      }
+      saveState();
+    }
+
+    function checkInGym() {
+      let today = getTodayKey();
+      state.gymCheckins[today] = true;
+      saveState();
+    }
+
+    function render() {
+      let today = getTodayKey();
+      
+      // Calisthenics UI
+      let pDone = !!state.pushups[today];
+      let sDone = !!state.situps[today];
+      let btnP = document.getElementById('btnPushups');
+      let btnS = document.getElementById('btnSitups');
+      
+      btnP.innerText = pDone ? 'Completed ✓' : 'Mark Done';
+      btnP.className = 'btn-toggle' + (pDone ? ' done' : '');
+      btnS.innerText = sDone ? 'Completed ✓' : 'Mark Done';
+      btnS.className = 'btn-toggle' + (sDone ? ' done' : '');
+      
+      document.getElementById('streakBadge').innerText = `🔥 ${state.streak} Day Streak`;
+
+      // Bible Reading UI
+      let bDay = state.bibleDay;
+      let planItem = PLAN[bDay - 1] || { label: "Completed Plan!", query: "Revelation 22" };
+      document.getElementById('bibleProgress').innerText = `Day ${bDay} of 730`;
+      document.getElementById('biblePassageText').innerText = planItem.label;
+      
+      let gatewayUrl = `https://www.biblegateway.com/passage/?search=${encodeURIComponent(planItem.query)}&version=ESV`;
+      document.getElementById('bibleGatewayLink').href = gatewayUrl;
+      
+      let bDone = !!state.bibleCompletedDays[bDay];
+      let btnB = document.getElementById('btnBibleDone');
+      btnB.innerText = bDone ? 'Read ✓' : 'Mark Done';
+      btnB.className = 'btn-bible-done' + (bDone ? ' done' : '');
+
+      // Gym UI (Sunday to Saturday)
+      let sun = new Date();
+      sun.setDate(sun.getDate() - sun.getDay());
+      let weekCount = 0;
+      for (let i = 0; i < 7; i++) {
+        let checkD = new Date(sun);
+        checkD.setDate(checkD.getDate() + i);
+        let key = checkD.toISOString().split('T')[0];
+        if (state.gymCheckins[key]) weekCount++;
+      }
+      
+      document.getElementById('weekSummary').innerText = `Week: ${weekCount}/7`;
+      
+      let starSilv = document.getElementById('starSilver');
+      let starGld = document.getElementById('starGold');
+      if (weekCount >= 5) starSilv.classList.add('achieved'); else starSilv.classList.remove('achieved');
+      if (weekCount >= 7) starGld.classList.add('achieved'); else starGld.classList.remove('achieved');
+
+      let gymBtn = document.getElementById('btnPF');
+      if (state.gymCheckins[today]) {
+        gymBtn.innerText = 'Checked In Today ✓';
+        gymBtn.disabled = true;
+      } else {
+        gymBtn.innerText = 'Check In at Gym';
+        gymBtn.disabled = false;
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
